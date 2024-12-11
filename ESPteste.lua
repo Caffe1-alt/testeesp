@@ -4,23 +4,20 @@ local localPlayer = Players.LocalPlayer
 
 local espInstances = {}
 
--- Função para obter a cor baseada no time
 local function getTeamColor(player)
     if player.Team == localPlayer.Team then
-        return Color3.new(0, 0, 1) -- Azul para aliados
+        return Color3.new(0, 0, 1)
     else
-        return Color3.new(1, 0, 0) -- Vermelho para inimigos
+        return Color3.new(1, 0, 0)
     end
 end
 
--- Função para criar o ESP
 local function createESP(player)
     if espInstances[player] then return end
 
     local function setupCharacter(character)
         local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 
-        -- BoxHandleAdornment
         local box = Instance.new("BoxHandleAdornment")
         box.Adornee = humanoidRootPart
         box.Size = Vector3.new(4, 6, 4)
@@ -30,7 +27,6 @@ local function createESP(player)
         box.Color3 = getTeamColor(player)
         box.Parent = humanoidRootPart
 
-        -- BillboardGui
         local billboard = Instance.new("BillboardGui")
         billboard.Adornee = humanoidRootPart
         billboard.Size = UDim2.new(4, 0, 1, 0)
@@ -47,7 +43,6 @@ local function createESP(player)
 
         billboard.Parent = humanoidRootPart
 
-        -- Atualizar a saúde dinamicamente
         local humanoid = character:WaitForChild("Humanoid")
         humanoid:GetPropertyChangedSignal("Health"):Connect(function()
             textLabel.Text = string.format("%s - %d HP", player.Name, math.floor(humanoid.Health))
@@ -78,7 +73,6 @@ local function createESP(player)
     end)
 end
 
--- Função para atualizar o ESP
 local function updateESPColors()
     for player, instance in pairs(espInstances) do
         if player and player.Team then
@@ -93,14 +87,13 @@ local function updateESPColors()
     end
 end
 
--- Monitorar mudanças de time e aplicar ESP após 10 segundos
 local function monitorTeamChanges()
     localPlayer:GetPropertyChangedSignal("Team"):Connect(function()
         updateESPColors()
     end)
 
     Players.PlayerAdded:Connect(function(player)
-        task.delay(10, function() -- Espera 10 segundos antes de criar ESP
+        task.delay(10, function()
             if player ~= localPlayer and player.Team then
                 createESP(player)
             end
@@ -109,7 +102,7 @@ local function monitorTeamChanges()
 end
 
 Players.PlayerAdded:Connect(function(player)
-    task.delay(10, function() -- ESP adicionado após 10 segundos
+    task.delay(10, function()
         if player ~= localPlayer then
             createESP(player)
         end
