@@ -1,8 +1,15 @@
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local localPlayer = Players.LocalPlayer
 
 local espInstances = {}
+
+local function getTeamColor(player)
+    if player.Team == localPlayer.Team then
+        return Color3.new(0, 0, 1)
+    else
+        return Color3.new(1, 0, 0)
+    end
+end
 
 local function createESP(player)
     if espInstances[player] then return end
@@ -15,8 +22,8 @@ local function createESP(player)
     box.Size = Vector3.new(4, 6, 4)
     box.AlwaysOnTop = true
     box.ZIndex = 5
-    box.Color3 = player.Team == localPlayer.Team and Color3.new(0, 0, 1) or Color3.new(1, 0, 0)
     box.Transparency = 0.3
+    box.Color3 = getTeamColor(player)
     box.Parent = humanoidRootPart
 
     local billboard = Instance.new("BillboardGui")
@@ -28,10 +35,10 @@ local function createESP(player)
     local textLabel = Instance.new("TextLabel", billboard)
     textLabel.Size = UDim2.new(1, 0, 1, 0)
     textLabel.BackgroundTransparency = 1
-    textLabel.TextColor3 = player.Team == localPlayer.Team and Color3.new(0, 0, 1) or Color3.new(1, 0, 0)
+    textLabel.TextColor3 = getTeamColor(player)
     textLabel.TextScaled = true
     textLabel.Font = Enum.Font.SourceSansBold
-    textLabel.Text = string.format("%s - %d HP", player.Name, math.floor(character:WaitForChild("Humanoid").Health))
+    textLabel.Text = string.format("%s - %d HP", player.Name, 100)
 
     billboard.Parent = humanoidRootPart
 
@@ -43,9 +50,37 @@ local function createESP(player)
     espInstances[player] = { box = box, billboard = billboard }
 
     player.CharacterRemoving:Connect(function()
-        box:Destroy()
-        billboard:Destroy()
-        espInstances[player] = nil
+        if espInstances[player] then
+            box:Destroy()
+            billboard:Destroy()
+            espInstances[player] = nil
+        end
+    end)
+end
+
+local function updateESPColors()
+    for player, instance in pairs(espInstances) do
+        if player and player.Team then
+            local newColor = getTeamColor(player)
+            if instance.box then
+                instance.box.Color3 = newColor
+            end
+            if instance.billboard then
+                instance.billboard.TextLabel.TextColor3 = newColor
+            end
+        end
+    end
+end
+
+local function monitorTeamChanges()
+    localPlayer:GetPropertyChangedSignal("Team"):Connect(function()
+        updateESPColors()
+    end)
+
+    Players.PlayerAdded:Connect(function(player)
+        player:GetPropertyChangedSignal("Team"):Connect(function()
+            updateESPColors()
+        end)
     end)
 end
 
@@ -68,3 +103,5 @@ for _, player in ipairs(Players:GetPlayers()) do
         createESP(player)
     end
 end
+
+monitorTeamChanges()
