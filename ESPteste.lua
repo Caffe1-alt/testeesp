@@ -1,8 +1,10 @@
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local localPlayer = Players.LocalPlayer
 
 local espInstances = {}
 
+-- Função para obter a cor baseada no time
 local function getTeamColor(player)
     if player.Team == localPlayer.Team then
         return Color3.new(0, 0, 1) -- Azul para aliados
@@ -11,6 +13,7 @@ local function getTeamColor(player)
     end
 end
 
+-- Função para criar o ESP
 local function createESP(player)
     if espInstances[player] then return end
 
@@ -75,8 +78,42 @@ local function createESP(player)
     end)
 end
 
+-- Função para atualizar o ESP
+local function updateESPColors()
+    for player, instance in pairs(espInstances) do
+        if player and player.Team then
+            local newColor = getTeamColor(player)
+            if instance.box then
+                instance.box.Color3 = newColor
+            end
+            if instance.billboard then
+                instance.billboard.TextLabel.TextColor3 = newColor
+            end
+        end
+    end
+end
+
+-- Monitorar mudanças de time e aplicar ESP após 10 segundos
+local function monitorTeamChanges()
+    localPlayer:GetPropertyChangedSignal("Team"):Connect(function()
+        updateESPColors()
+    end)
+
+    Players.PlayerAdded:Connect(function(player)
+        task.delay(10, function() -- Espera 10 segundos antes de criar ESP
+            if player ~= localPlayer and player.Team then
+                createESP(player)
+            end
+        end)
+    end)
+end
+
 Players.PlayerAdded:Connect(function(player)
-    createESP(player)
+    task.delay(10, function() -- ESP adicionado após 10 segundos
+        if player ~= localPlayer then
+            createESP(player)
+        end
+    end)
 end)
 
 Players.PlayerRemoving:Connect(function(player)
@@ -92,3 +129,5 @@ for _, player in ipairs(Players:GetPlayers()) do
         createESP(player)
     end
 end
+
+monitorTeamChanges()
