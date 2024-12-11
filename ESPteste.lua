@@ -123,4 +123,6 @@ for _, player in ipairs(Players:GetPlayers()) do
     end
 end
 
-monitorTeamChanges()
+task.delay(5, function()
+    monitorTeamChanges()
+end)
