@@ -4,12 +4,11 @@ local Workspace = game:GetService("Workspace")
 local localPlayer = Players.LocalPlayer
 
 local aimInterval = 0.05
-local maxDistance = 600
-
+local maxDistance = 900
 local lastUpdate = 0
 
-local function isAlly(player)
-    return player.Team == localPlayer.Team
+local function isEnemy(player)
+    return player ~= localPlayer and (not player.Team or player.Team ~= localPlayer.Team)
 end
 
 local function getClosestEnemy()
@@ -17,7 +16,7 @@ local function getClosestEnemy()
     local closestDistance = math.huge
 
     for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= localPlayer and not isAlly(player) and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        if isEnemy(player) and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             local rootPart = player.Character.HumanoidRootPart
             local distance = (rootPart.Position - localPlayer.Character.HumanoidRootPart.Position).Magnitude
 
