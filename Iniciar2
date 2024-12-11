@@ -1,0 +1,2 @@
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Caffe1-alt/testeesp/main/Aimbotteste.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Caffe1-alt/testeesp/main/ESPteste.lua"))()
